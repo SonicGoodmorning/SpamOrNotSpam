@@ -1,3 +1,5 @@
+import java.util.*;
+
 public class Classifier {
 /*
 
@@ -13,7 +15,13 @@ public class Classifier {
 - After all of this we will then TestAccuracy by sending in our ArrayList<> of Emails which hold the TrueSpam and GuessSpam fields and then compare
 - Then returning a accuracy rate of all of this
 */
+    public List<Email> Emails = new ArrayList<>();
+    public List<Email> SpamEmails = new ArrayList<>();
+    public List<Email> NotSpamEmails = new ArrayList<>();
+    
+    public List<String> SpamWords = new ArrayList<>();
+    public List<String> StopWords = new ArrayList<>();
+
     public static void main(String[] args){
-        System.out.print("hi");
     }
 }
