@@ -1,3 +1,7 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
 public class Email {
 /*
 - Loop through and parse the CSV, each iteration of the loop will create a email object
@@ -20,6 +24,20 @@ int SpamGuess;
 int NumberCount;
 int UrlCount;
 int WordCount;
+
+public Email(String rText, int id){
+
+    setId(id);
+    setrawText(rText);
+    int trues = Integer.parseInt(String.valueOf(rawText.charAt(rawText.length()-1)));
+    setTrueSpam(trues);
+
+    setWordCount(rawText.split("\\s+").length);
+    setNumberCount(rawText.replaceAll("[^0-9]", "").length());
+    setUrlCount(rawText.split("URL").length - 1);
+
+
+}
 
 public String getrawText(){return rawText;}
 public int getId(){return Id;}

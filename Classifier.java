@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 public class Classifier {
@@ -15,13 +17,37 @@ public class Classifier {
 - After all of this we will then TestAccuracy by sending in our ArrayList<> of Emails which hold the TrueSpam and GuessSpam fields and then compare
 - Then returning a accuracy rate of all of this
 */
+
+
+
     public List<Email> Emails = new ArrayList<>();
+
     public List<Email> SpamEmails = new ArrayList<>();
     public List<Email> NotSpamEmails = new ArrayList<>();
     
     public List<String> SpamWords = new ArrayList<>();
     public List<String> StopWords = new ArrayList<>();
 
-    public static void main(String[] args){
+    public Classifier() throws FileNotFoundException {
+        Scanner scan = new Scanner(new File("spam_or_not_spam.csv"));
+        scan.nextLine();
+
+        int id = 0;
+        while(scan.hasNextLine()){
+            String email = scan.nextLine();
+            Email e = new Email(email, id++);
+            Emails.add(e);
+
+            if (e.getTrueSpam() == 1)
+                SpamEmails.add(e);
+            else
+                NotSpamEmails.add(e);
+        }
+
+    }
+
+    public static void main(String[] args) throws FileNotFoundException {
+
+        Classifier c = new Classifier();
     }
 }
