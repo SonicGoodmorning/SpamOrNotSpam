@@ -73,25 +73,93 @@ public class Classifier {
         sortedWords.sort((a, b) -> b.getValue() - a.getValue());
 
         // filter out StopWords (the, to, and, of, etc)
-        List<String> stopWords = Arrays.asList("the", "to", "and", "of", "in", "a", 
-        "is", "it", "that", "on", "you", "for", "with", "as", "this", "but", "be", "are", 
+        List<String> stopWords = Arrays.asList("the", "to", "and", "of", "in", "a",
+        "is", "it", "that", "on", "you", "for", "with", "as", "this", "but", "be", "are",
         "not", "or", "if", "at", "by", "an", "be", "from", "i", "have");
 
         sortedWords.removeIf(entry -> stopWords.contains(entry.getKey()));
 
         // add the top 30 most common words to the SpamWords list and also mention their frequencies
-        for (int i = 0; i < Math.min(30, sortedWords.size()); i++) {
+        for (int i = 0; i < Math.min(75, sortedWords.size()); i++) {
             Map.Entry<String, Integer> entry = sortedWords.get(i);
             SpamWords.add(entry.getKey() + " (" + entry.getValue() + ")");
         }
 
+    }
+    // Classifies all emails using SpamWords list + heuristic features
+    public void ClassifyEmails(List<Email> emails) {
+        for (Email e : emails) {
+            double score = 0;
+            String[] words = e.getrawText().toLowerCase().split("\\s+");
+
+            // --- Feature 1: Spam word hits (unique matches only) ---
+            // Count how many DISTINCT spam words appear, not total occurrences
+            // This prevents one repeated word from inflating the score
+            Set<String> seenSpamHits = new HashSet<>();
+            for (String word : words) {
+                word = word.replaceAll("[^a-zA-Z0-9]", "");
+                if (SpamWords.contains(word) && !seenSpamHits.contains(word)) {
+                    seenSpamHits.add(word);
+                    score += 1;
+                }
+            }
+
+            // --- Feature 2: URL count ---
+            if (e.UrlCount >= 3) score += 2;
+            else if (e.UrlCount >= 1) score += 1;
+
+            // --- Feature 3: Number density ---
+            if (e.getWordCount() > 0) {
+                double numberDensity = (double) e.getNumberCount() / e.getWordCount();
+                if (numberDensity > 0.5) score += 2;
+                else if (numberDensity > 0.3) score += 1;
+            }
+
+            // --- Feature 4: Very short emails ---
+            if (e.getWordCount() < 10) score += 1;
+
+            // --- Threshold ---
+            e.setSpamGuess(score >= 4 ? 1 : 0);
+        }
+    }
+
+    // Compares SpamGuess vs TrueSpam across all emails and prints results
+    public void TestAccuracy(List<Email> emails) {
+        int correct = 0;
+        int truePositive = 0;   // guessed spam, actually spam
+        int falsePositive = 0;  // guessed spam, actually not spam
+        int trueNegative = 0;   // guessed not spam, actually not spam
+        int falseNegative = 0;  // guessed not spam, actually spam
+
+        for (Email e : emails) {
+            boolean guessedSpam = e.getSpamGuess() == 1;
+            boolean actuallySpam = e.getTrueSpam() == 1;
+
+            if (guessedSpam && actuallySpam)       { truePositive++;  correct++; }
+            else if (!guessedSpam && !actuallySpam) { trueNegative++;  correct++; }
+            else if (guessedSpam && !actuallySpam)  { falsePositive++;            }
+            else if (!guessedSpam && actuallySpam)  { falseNegative++;            }
+        }
+
+        double accuracy = (double) correct / emails.size() * 100;
+
+        System.out.println("=== Classifier Results ===");
+        System.out.printf("Total Emails:    %d%n", emails.size());
+        System.out.printf("Correct:         %d%n", correct);
+        System.out.printf("Accuracy:        %.2f%%%n", accuracy);
+        System.out.println("--------------------------");
+        System.out.printf("True Positives:  %d  (spam caught)%n", truePositive);
+        System.out.printf("True Negatives:  %d  (ham correctly ignored)%n", trueNegative);
+        System.out.printf("False Positives: %d  (ham marked as spam)%n", falsePositive);
+        System.out.printf("False Negatives: %d  (spam that slipped through)%n", falseNegative);
     }
 
     public static void main(String[] args) throws FileNotFoundException {
 
         Classifier c = new Classifier();
         c.SpamWords(c.SpamEmails, c.NotSpamEmails);
-        System.out.println(c.SpamWords);
+        c.ClassifyEmails(c.Emails);
+        c.TestAccuracy(c.Emails);
 
     }
 }
