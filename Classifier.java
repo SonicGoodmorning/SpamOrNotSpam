@@ -92,7 +92,7 @@ public class Classifier {
             double score = 0;
             String[] words = e.getrawText().toLowerCase().split("\\s+");
 
-            // Feature 1: Spam word hits (unique matches only) ---
+            // Feature 1: Spam word hits (unique matches only)
             // Count how many unique spam words appear, not total occurrences
             // This prevents one repeated word from inflating the score
             Set<String> seenSpamHits = new HashSet<>();
@@ -118,8 +118,8 @@ public class Classifier {
             // Feature 4: Very short emails
             if (e.getWordCount() < 10) score += 1;
 
-            // --- Threshold ---
-            if (score >= 4) {
+            //Threshold
+            if (score >= 7) {
                 e.setSpamGuess(1);
             } else {
                 e.setSpamGuess(0);
