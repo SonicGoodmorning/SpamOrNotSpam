@@ -18,13 +18,13 @@ public class Classifier {
 - Then returning a accuracy rate of all of this
 */
 
-    public List<Email> Emails = new ArrayList<>();
+    public ArrayList<Email> Emails = new ArrayList<>();
 
-    public List<Email> SpamEmails = new ArrayList<>();
-    public List<Email> NotSpamEmails = new ArrayList<>();
+    public ArrayList<Email> SpamEmails = new ArrayList<>();
+    public ArrayList<Email> NotSpamEmails = new ArrayList<>();
     
-    public List<String> SpamWords = new ArrayList<>();
-    public List<String> StopWords = new ArrayList<>();
+    public ArrayList<String> SpamWords = new ArrayList<>();
+    public ArrayList<String> StopWords = new ArrayList<>();
 
     public Classifier() throws FileNotFoundException {
         Scanner scan = new Scanner(new File("spam_or_not_spam.csv"));
@@ -57,7 +57,7 @@ public class Classifier {
     // unless we just assume the first top 10 words are just stop words, so we may have to do a static stop word list idk if cui will 
     // like that but we will find out
 
-    public void SpamWords(List<Email> SpamEmails, List<Email> NotSpamEmails) {
+    public void SpamWords(ArrayList<Email> SpamEmails, ArrayList<Email> NotSpamEmails) {
         // find common words in spam emails and add to SpamWords list
         Map<String, Integer> wordCount = new HashMap<>();
         for (Email e : SpamEmails) {
@@ -79,21 +79,21 @@ public class Classifier {
 
         sortedWords.removeIf(entry -> stopWords.contains(entry.getKey()));
 
-        // add the top 30 most common words to the SpamWords list and also mention their frequencies
-        for (int i = 0; i < Math.min(75, sortedWords.size()); i++) {
+        // add the top 5 most common words to the SpamWords list and also mention their frequencies
+        for (int i = 0; i < Math.min(7, sortedWords.size()); i++) {
             Map.Entry<String, Integer> entry = sortedWords.get(i);
-            SpamWords.add(entry.getKey() + " (" + entry.getValue() + ")");
+            SpamWords.add(entry.getKey());
         }
 
     }
-    // Classifies all emails using SpamWords list + heuristic features
-    public void ClassifyEmails(List<Email> emails) {
+    // Classifies all emails using SpamWords list +  features
+    public void ClassifyEmails(ArrayList<Email> emails) {
         for (Email e : emails) {
             double score = 0;
             String[] words = e.getrawText().toLowerCase().split("\\s+");
 
-            // --- Feature 1: Spam word hits (unique matches only) ---
-            // Count how many DISTINCT spam words appear, not total occurrences
+            // Feature 1: Spam word hits (unique matches only) ---
+            // Count how many unique spam words appear, not total occurrences
             // This prevents one repeated word from inflating the score
             Set<String> seenSpamHits = new HashSet<>();
             for (String word : words) {
@@ -104,27 +104,31 @@ public class Classifier {
                 }
             }
 
-            // --- Feature 2: URL count ---
+            //Feature 2: URL count
             if (e.UrlCount >= 3) score += 2;
             else if (e.UrlCount >= 1) score += 1;
 
-            // --- Feature 3: Number density ---
+            // Feature 3: Number density
             if (e.getWordCount() > 0) {
                 double numberDensity = (double) e.getNumberCount() / e.getWordCount();
                 if (numberDensity > 0.5) score += 2;
                 else if (numberDensity > 0.3) score += 1;
             }
 
-            // --- Feature 4: Very short emails ---
+            // Feature 4: Very short emails
             if (e.getWordCount() < 10) score += 1;
 
             // --- Threshold ---
-            e.setSpamGuess(score >= 4 ? 1 : 0);
+            if (score >= 4) {
+                e.setSpamGuess(1);
+            } else {
+                e.setSpamGuess(0);
+            }
         }
     }
 
     // Compares SpamGuess vs TrueSpam across all emails and prints results
-    public void TestAccuracy(List<Email> emails) {
+    public void TestAccuracy(ArrayList<Email> emails) {
         int correct = 0;
         int truePositive = 0;   // guessed spam, actually spam
         int falsePositive = 0;  // guessed spam, actually not spam
@@ -135,10 +139,17 @@ public class Classifier {
             boolean guessedSpam = e.getSpamGuess() == 1;
             boolean actuallySpam = e.getTrueSpam() == 1;
 
-            if (guessedSpam && actuallySpam)       { truePositive++;  correct++; }
-            else if (!guessedSpam && !actuallySpam) { trueNegative++;  correct++; }
-            else if (guessedSpam && !actuallySpam)  { falsePositive++;            }
-            else if (!guessedSpam && actuallySpam)  { falseNegative++;            }
+            if (guessedSpam && actuallySpam) {
+                truePositive++;
+                correct++;
+            } else if (!guessedSpam && !actuallySpam) {
+                trueNegative++;
+                correct++;
+            } else if (guessedSpam && !actuallySpam)  {
+                falsePositive++;
+            } else if (!guessedSpam && actuallySpam)  {
+                falseNegative++;
+            }
         }
 
         double accuracy = (double) correct / emails.size() * 100;

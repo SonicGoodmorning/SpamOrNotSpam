@@ -33,8 +33,15 @@ public Email(String rText, int id){
     int trues = Integer.parseInt(String.valueOf(rawText.charAt(rawText.length()-1)));
     setTrueSpam(trues);
 
+    //find the amount of words by counting the size of the array that is created
+    // when splitting the email into words seperated by 1 or more spaces
     setWordCount(rawText.split("\\s+").length);
+
+    //replaces every character in the email that is not a number
+    // 0-9 with blank space then takes finds thhe length of the string that remains
     setNumberCount(rawText.replaceAll("[^0-9]", "").length());
+
+    //split the email similarly to word count but instead checking for instances of URL to determine the link count
     setUrlCount(rawText.split("URL").length - 1);
 
 }
@@ -49,6 +56,7 @@ public String toString(){
      " UrlCount: " + UrlCount;
 }
 
+//Getters and Setters for initialized fields
 public String getrawText(){return rawText;}
 public int getId(){return Id;}
 public int getSpamGuess(){return SpamGuess;}
