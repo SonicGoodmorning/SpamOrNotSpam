@@ -1,6 +1,9 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Email {
 /*
@@ -24,6 +27,7 @@ int SpamGuess;
 int NumberCount;
 int UrlCount;
 int WordCount;
+int UniqueWordCount;
 
 // when given email text and id set all fields
 public Email(String rText, int id){
@@ -40,9 +44,10 @@ public Email(String rText, int id){
     //replaces every character in the email that is not a number
     // 0-9 with blank space then takes finds thhe length of the string that remains
     setNumberCount(rawText.replaceAll("[^0-9]", "").length());
+    Set<String> uniqueWords = new HashSet<>(Arrays.asList(rawText.toLowerCase().split("\\s+")));
+    UniqueWordCount = uniqueWords.size();
 
-    //split the email similarly to word count but instead checking for instances of URL to determine the link count
-    setUrlCount(rawText.split("URL").length - 1);
+
 
 }
 
@@ -63,6 +68,7 @@ public int getSpamGuess(){return SpamGuess;}
 public int getTrueSpam(){return TrueSpam;}
 public int getWordCount(){return WordCount;}
 public int getNumberCount(){return NumberCount;}
+public int getUniqueWordCount(){return UniqueWordCount;}
 
 public void setrawText(String s){rawText = s;}
 

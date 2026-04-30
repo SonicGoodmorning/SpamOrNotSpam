@@ -79,6 +79,12 @@ public class Classifier {
 
         sortedWords.removeIf(entry -> stopWords.contains(entry.getKey()));
 
+//Used to refine stop words list
+//        System.out.println("Spam words after comparison filter:");
+//        for (int i = 0; i < Math.min(7, sortedWords.size()); i++) {
+//            System.out.println(sortedWords.get(i).getKey() + " : " + sortedWords.get(i).getValue());
+//        }
+
         // add the top 5 most common words to the SpamWords list and also mention their frequencies
         for (int i = 0; i < Math.min(7, sortedWords.size()); i++) {
             Map.Entry<String, Integer> entry = sortedWords.get(i);
@@ -105,21 +111,31 @@ public class Classifier {
             }
 
             //Feature 2: URL count
-            if (e.UrlCount >= 3) score += 2;
-            else if (e.UrlCount >= 1) score += 1;
+            if (e.UrlCount >= 3) score += 3;
+            else if (e.UrlCount >= 1) score += 2;
 
             // Feature 3: Number density
             if (e.getWordCount() > 0) {
                 double numberDensity = (double) e.getNumberCount() / e.getWordCount();
-                if (numberDensity > 0.5) score += 2;
-                else if (numberDensity > 0.3) score += 1;
+                if (numberDensity > 0.3) score += 2;
+                else if (numberDensity > 0.15) score += 1;
             }
 
+
+
             // Feature 4: Very short emails
-            if (e.getWordCount() < 10) score += 1;
+            if (e.getWordCount() < 20) score += 1;
+
+            // Feature 5: Low unique word ratio indicates repetitive spam
+            if (e.getWordCount() > 0) {
+                double uniqueRatio = (double) e.getUniqueWordCount() / e.getWordCount();
+                if (uniqueRatio < 0.15) score += 2;
+                else if (uniqueRatio < 0.3) score += 1;
+            }
+
 
             //Threshold
-            if (score >= 7) {
+            if (score >= 6) {
                 e.setSpamGuess(1);
             } else {
                 e.setSpamGuess(0);
