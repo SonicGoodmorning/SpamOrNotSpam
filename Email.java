@@ -40,7 +40,14 @@ public Email(String rText, int id){
     //find the amount of words by counting the size of the array that is created
     // when splitting the email into words seperated by 1 or more spaces
     setWordCount(rawText.split("\\s+").length);
-
+    // int Urls = 0;
+    // String[] words = rawText.split("\\s+");
+    // for (String word : words) {
+    //     if (word.contains("URL")) {
+    //         Urls++;
+    //     }
+    // }
+    // setUrlCount(Urls);
     //replaces every character in the email that is not a number
     // 0-9 with blank space then takes finds thhe length of the string that remains
     setNumberCount(rawText.replaceAll("[^0-9]", "").length());
@@ -66,6 +73,7 @@ public String getrawText(){return rawText;}
 public int getId(){return Id;}
 public int getSpamGuess(){return SpamGuess;}
 public int getTrueSpam(){return TrueSpam;}
+public int getUrlCount(){return UrlCount;}
 public int getWordCount(){return WordCount;}
 public int getNumberCount(){return NumberCount;}
 public int getUniqueWordCount(){return UniqueWordCount;}

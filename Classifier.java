@@ -25,6 +25,7 @@ public class Classifier {
     
     public ArrayList<String> SpamWords = new ArrayList<>();
     public ArrayList<String> StopWords = new ArrayList<>();
+    public List<String> HardSpamWords = Arrays.asList("free", "win", "winner", "prize", "cash", "urgent", "offer", "click", "buy", "cheap", "lottery", "viagra", "credit", "guarantee", "guaranteed", "invest", "investment");
 
     public Classifier() throws FileNotFoundException {
         Scanner scan = new Scanner(new File("spam_or_not_spam.csv"));
@@ -104,7 +105,7 @@ public class Classifier {
             Set<String> seenSpamHits = new HashSet<>();
             for (String word : words) {
                 word = word.replaceAll("[^a-zA-Z0-9]", "");
-                if (SpamWords.contains(word) && !seenSpamHits.contains(word)) {
+                if ((SpamWords.contains(word) || HardSpamWords.contains(word)) && !seenSpamHits.contains(word)) {
                     seenSpamHits.add(word);
                     score += 1;
                 }
